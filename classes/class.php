@@ -3,16 +3,20 @@
 class Review
 {
 	// Properties of Review
+	public $uniqueId;
+	public $movieName;
 	public $userId;
 	public $rating;
 	public $date;
 	public $reviewText;
 
 	// construct Review
-	public function __construct($userId, $rating, $date, $reviewText) {
+	public function __construct($uniqueId, $movieName, $userId, $rating, $date, $reviewText) {
+		$this->uniqueId = $uniqueId;
+		$this->movieName = $movieName;
         $this->userId = $userId;
         $this->rating = intval($rating);
-        $this->date = self::formatDate($date);
+        $this->date = $date;
         $this->reviewText = $reviewText;
     }
 

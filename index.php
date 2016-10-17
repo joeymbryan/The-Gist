@@ -15,17 +15,23 @@ $html->load_file($url);
 // array to store scraped reviews
 $reviews = array();
 
+$movie = $html->find("h2 a.articleLink",0)->href;
+
+$movie = str_replace('/m','', $movie);
+$movie = str_replace('/','', $movie);
+
 // crawl the webpage for reviews
 foreach($html->find("div.review_table_row") as $singleReview){
-	
+	$movieName = $movie;
 	$userId = $singleReview->find("a.articleLink",0)->href;
+	$userId = str_replace('/user/id/', '', $userId);
+	$userId = str_replace('/','', $userId);
 	$rating =  $singleReview->find("div.scoreWrapper span",0)->class; // add class
 	$date = $singleReview->find("div.col-xs-16 span.subtle",0)->plaintext;
-	// $newDate = DateTime::createFromFormat('F j, Y ', $date);
-	// $date = date_format($newDate, 'Y-m-d');
-	// $date = self::formatDate($date);
+	$date = Review::formatDate($date);
 	$reviewText = $singleReview->find("div.user_review",0)->plaintext;
-    $review = new Review($userId, $rating, $date, $reviewText);
+	$uniqueId = $movieName . '_' . $date . '_' . $userId;
+    $review = new Review($uniqueId, $movieName, $userId, $rating, $date, $reviewText);
     $reviews[] = $review;
 }
 
