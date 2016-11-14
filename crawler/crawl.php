@@ -9,19 +9,27 @@ require("../core/class.php");
 $title = $_GET['title'];
 
 // Connect and Prepare DB Connection
-	// use prepare statement for insert query
-	$st = mysqli_prepare($connect, 'INSERT INTO Reviews(uniqueId, movieName, UserId, rating, release_date, reviewText) VALUES (?, ?, ?, ?, ?, ?)');
+// use prepare statement for insert query
+$movieSt = mysqli_prepare($connect, 'INSERT INTO Movies(movieName, crawlDate, releaseDate) VALUES (?, ?, ?)');
+$reviewSt = mysqli_prepare($connect, 'INSERT INTO Reviews(uniqueId, movieName, UserId, rating, reviewDate, reviewText) VALUES (?, ?, ?, ?, ?, ?)');
 
-// open the web page
+// crawl 20 pages of Reviews
+
+// set target url to crawl
+$url = "https://www.rottentomatoes.com/m/" . $title . "/reviews/?page=" . $x . "&type=user"; // change this
+
+$html = file_get_html($url);
+
+$releaseDate = ;
+$crawlDate = ;
+$plainTitle
+// bind variables to insert query params for Movie
+mysqli_stmt_bind_param($movieSt, 'sss', $title, $releaseDate, $crawlDate);
+
+// execute insert query
+mysqli_stmt_execute($movieSt);
+
 for($x = 1; $x <= 20; $x++) {
-
-	
-
-	// set target url to crawl
-	$url = "https://www.rottentomatoes.com/m/" . $title . "/reviews/?page=" . $x . "&type=user"; // change this
-
-	$html = file_get_html($url);
-	
 
 	// crawl the webpage for reviews
 	foreach($html->find("div.review_table_row") as $singleReview){
@@ -32,21 +40,21 @@ for($x = 1; $x <= 20; $x++) {
 
 		$rating =  $singleReview->find("div.scoreWrapper span",0)->class; // add class
 
-		$date = $singleReview->find("div.col-xs-16 span.subtle",0)->plaintext;
-		$date = Review::formatDate($date);
-
 		$reviewText = $singleReview->find("div.user_review",0)->plaintext;
 
-		$uniqueId = $title . '_' . $date . '_' . $userId;
+		$reviewDate = $singleReview->find("div.col-xs-16 span.subtle",0)->plaintext;
+		$reviewDate = Review::formatDate($releaseDate);
 
-	    $review = new Review($uniqueId, $title, $userId, $rating, $date, $reviewText);
+		$uniqueId = $title . '_' . $reviewDate . '_' . $userId;
+
+	    $review = new Review($uniqueId, $title, $userId, $rating, $reviewDate, $reviewText);
 
 		// bind variables to insert query params
-		mysqli_stmt_bind_param($st, 'ssssss', $uniqueId, $title, $userId, $rating, $date, $reviewText);
+		mysqli_stmt_bind_param($reviewSt, 'ssssss', $uniqueId, $title, $userId, $rating, $reviewDate, $reviewText);
 	    
 
 	    // execute insert query
-	    mysqli_stmt_execute($st);
+	    mysqli_stmt_execute($reviewSt);
 	}
 	//close connection
 	echo "loop " . $x . " \n";
